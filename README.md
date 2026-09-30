@@ -1,5 +1,9 @@
 # lockwatch
 
+[![Release](https://img.shields.io/github/v/release/unlinedoverwe/lockwatch?display_name=tag)](https://github.com/unlinedoverwe/lockwatch/releases)
+[![License](https://img.shields.io/github/license/unlinedoverwe/lockwatch)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/unlinedoverwe/lockwatch?style=flat)](https://github.com/unlinedoverwe/lockwatch/stargazers)
+
 lockwatch is a small, read-only dependency vulnerability scanner. It reads
 `package-lock.json` (npm lockfile v1-v3), `requirements.txt`, and
 `poetry.lock`, then optionally asks [OSV.dev](https://osv.dev/) about exact
