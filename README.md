@@ -48,4 +48,10 @@ access or a target project's code.
 
 ## License
 
+MIT
+
+See `LICENSE` for the full text.
+
+## License
+
 MIT; see the project metadata for details.
