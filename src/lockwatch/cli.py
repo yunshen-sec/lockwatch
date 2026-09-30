@@ -10,7 +10,7 @@ from typing import List, Optional, Sequence
 from .models import ScanResult, Severity
 from .osv import OsvCache, scan_packages
 from .output import filter_findings, render_json, render_sarif, render_text
-from .parsers import ParseError, parse_files
+from .parsers import ParseError, parse_files, parse_package_lock, parse_poetry_lock, parse_requirements
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,13 +45,32 @@ def _paths_from_args(args: argparse.Namespace) -> List[Path]:
     return discovered
 
 
+def _packages_from_args(args: argparse.Namespace):
+    """Parse explicit typed options even when their generated files have odd names."""
+    packages = []
+    if args.paths:
+        packages.extend(parse_files(args.paths))
+    for path in args.package_locks:
+        packages.extend(parse_package_lock(path))
+    for path in args.requirements:
+        packages.extend(parse_requirements(path))
+    for path in args.poetry_locks:
+        packages.extend(parse_poetry_lock(path))
+    if not packages and not (args.paths or args.package_locks or args.requirements or args.poetry_locks):
+        packages.extend(parse_files(_paths_from_args(args)))
+    # parse_files performs the canonical de-duplication; applying it to the
+    # explicitly typed sources also keeps duplicate flags harmless.
+    by_key = {package.key(): package for package in packages}
+    return sorted(by_key.values(), key=lambda item: (item.ecosystem, item.name.lower(), item.version))
+
+
 def run_scan(args: argparse.Namespace) -> int:
     try:
         threshold = Severity.parse(args.severity_threshold)
         fail_on = Severity.parse(args.fail_on) if args.fail_on else None
         if args.timeout <= 0:
             raise ValueError("timeout must be greater than zero")
-        packages = parse_files(_paths_from_args(args))
+        packages = _packages_from_args(args)
     except (ParseError, ValueError) as exc:
         print("lockwatch: error: %s" % exc, file=sys.stderr)
         return 2

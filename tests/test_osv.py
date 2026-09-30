@@ -33,3 +33,9 @@ def test_osv_cache_avoids_second_request(tmp_path, monkeypatch):
     assert first == second
     assert len(calls) == 1
     assert osv.findings_for_package(package, first)[0].severity.name == "HIGH"
+
+
+def test_osv_skips_unpinned_ranges(monkeypatch):
+    monkeypatch.setattr(osv, "urlopen", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("network should not be used")))
+    response = osv.query_package(Package("urllib3", ">=2.0", "PyPI", "requirements.txt"), timeout=1)
+    assert response["skipped"] == "version is not exact"

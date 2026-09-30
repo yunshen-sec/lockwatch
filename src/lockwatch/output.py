@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
+from pathlib import Path
 from typing import Iterable, List
 
 from .models import Finding, ScanResult, Severity
@@ -27,6 +27,13 @@ def _sarif_level(severity: Severity) -> str:
     return "note"
 
 
+def _artifact_uri(source: str) -> str:
+    try:
+        return Path(source).resolve().as_uri()
+    except (OSError, ValueError):
+        return source
+
+
 def render_sarif(result: ScanResult) -> str:
     rules = {}
     sarif_results = []
@@ -37,7 +44,7 @@ def render_sarif(result: ScanResult) -> str:
             "ruleId": rule_id,
             "level": _sarif_level(finding.severity),
             "message": {"text": "%s %s is affected: %s" % (finding.package.name, finding.package.version, finding.summary or rule_id)},
-            "locations": [{"physicalLocation": {"artifactLocation": {"uri": finding.package.source}}}],
+            "locations": [{"physicalLocation": {"artifactLocation": {"uri": _artifact_uri(finding.package.source)}}}],
             "properties": {"package": finding.package.name, "version": finding.package.version, "ecosystem": finding.package.ecosystem, "severity": finding.severity.name.lower(), "aliases": finding.aliases},
         }
         if finding.references:
@@ -46,7 +53,7 @@ def render_sarif(result: ScanResult) -> str:
     payload = {
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
         "version": "2.1.0",
-        "runs": [{"tool": {"driver": {"name": "lockwatch", "version": "0.1.0", "informationUri": "https://github.com/lockwatch/lockwatch", "rules": list(rules.values())}}, "results": sarif_results}],
+        "runs": [{"tool": {"driver": {"name": "lockwatch", "version": "0.1.0", "informationUri": "https://osv.dev/", "rules": list(rules.values())}}, "results": sarif_results}],
     }
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 

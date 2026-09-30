@@ -1,7 +1,5 @@
-.pytest_cache/
 __pycache__/
 *.py[cod]
-.venv/
-dist/
-build/
+.pytest_cache/
 *.egg-info/
+.lockwatch-cache.json

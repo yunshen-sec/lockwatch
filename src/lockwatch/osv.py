@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 import time
 from pathlib import Path
@@ -81,7 +82,11 @@ def query_package(package: Package, timeout: float = 5.0, cache: Optional[OsvCac
         cached = cache.get(key)
         if cached is not None:
             return cached
-    if package.version in {"", "*"} or package.version.startswith(("http://", "https://", "git+")):
+    # A range such as ``>=2.0`` cannot identify one OSV release.  It stays in
+    # the inventory but is deliberately skipped instead of issuing a misleading
+    # query.
+    is_range = bool(re.match(r"^(?:===?|~=|!=|>=|<=|>|<)", package.version)) or any(char in package.version for char in (",", ";", " "))
+    if package.version in {"", "*"} or is_range or package.version.startswith(("http://", "https://", "git+")):
         response: Dict[str, Any] = {"vulns": [], "skipped": "version is not exact"}
         if cache:
             cache.put(key, response)

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Sequence
 
 from .models import Package
 
@@ -39,10 +39,13 @@ def _dedupe(packages: Iterable[Package]) -> List[Package]:
 def parse_package_lock(path: Path) -> List[Package]:
     """Read npm package-lock v1, v2, and v3 files."""
 
+    path = Path(path)
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise ParseError("cannot read package-lock.json %s: %s" % (path, exc)) from exc
+    if not isinstance(document, dict):
+        raise ParseError("package-lock.json %s must contain a JSON object" % path)
     packages: List[Package] = []
     package_map = document.get("packages")
     if isinstance(package_map, dict):
@@ -86,7 +89,7 @@ def _npm_name_from_location(location: str) -> str:
     return tail.split("/", 1)[0]
 
 
-_REQ_OPTION = re.compile(r"^(?:-r|--requirement|-c|--constraint|-f|--find-links|--index-url|--extra-index-url|--trusted-host)\b", re.I)
+_REQ_OPTION = re.compile(r"^(?:-r|--requirement|-c|--constraint|-f|--find-links|--index-url|--extra-index-url|--trusted-host|-e|--editable)\b", re.I)
 
 
 def parse_requirements(path: Path) -> List[Package]:
@@ -96,6 +99,7 @@ def parse_requirements(path: Path) -> List[Package]:
     version marker.  OSV queries are only attempted for exact versions.
     """
 
+    path = Path(path)
     packages: List[Package] = []
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -104,6 +108,8 @@ def parse_requirements(path: Path) -> List[Package]:
     for raw in lines:
         line = raw.strip()
         if not line or line.startswith("#") or line.startswith(";") or _REQ_OPTION.match(line):
+            continue
+        if line.startswith(("git+", "http://", "https://", "file:")):
             continue
         # Strip an inline comment only when separated by whitespace.
         line = re.split(r"\s+#", line, maxsplit=1)[0].strip()
@@ -138,6 +144,7 @@ def parse_requirements(path: Path) -> List[Package]:
 def parse_poetry_lock(path: Path) -> List[Package]:
     """Parse Poetry's TOML lockfile when tomllib/tomli is available."""
 
+    path = Path(path)
     try:
         text = path.read_bytes()
     except (OSError, IOError) as exc:
@@ -166,6 +173,7 @@ def parse_files(paths: Sequence[Path]) -> List[Package]:
 
     packages: List[Package] = []
     for path in paths:
+        path = Path(path)
         lower = path.name.lower()
         if lower == "package-lock.json":
             packages.extend(parse_package_lock(path))
