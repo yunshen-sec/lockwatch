@@ -14,6 +14,25 @@ scanned project.
 development. Findings are version matches for review, not proof of exploitability
 or runtime reachability.
 
+## At a glance
+
+| Concern | Behavior |
+| --- | --- |
+| Input | `package-lock.json` (v1–v3), `requirements.txt`, or `poetry.lock` |
+| Network | Offline by default; `--osv` explicitly enables OSV.dev requests |
+| Output | Text for review, JSON for automation, or SARIF for code-scanning systems |
+| Execution | Reads lockfiles only; never imports, installs, builds, or runs project code |
+
+## Review workflow
+
+1. Pin dependencies and keep the lockfile in the same review scope as the
+   source change.
+2. Run an offline scan first and preserve the report as a CI artifact.
+3. If policy permits, rerun with `--osv` using a bounded timeout and a reviewed
+   cache; verify advisory details against the upstream source.
+4. Confirm reachability and remediation in the owning project, then rescan the
+   updated lockfile before release.
+
 ## Authorization and safe use
 
 Only scan source trees and lockfiles that you are authorised to inspect. The
@@ -59,7 +78,3 @@ access or a target project's code.
 MIT
 
 See `LICENSE` for the full text.
-
-## License
-
-MIT; see the project metadata for details.
