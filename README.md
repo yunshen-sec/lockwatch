@@ -10,6 +10,10 @@ lockwatch is a small, read-only dependency vulnerability scanner. It reads
 versions. It never imports, installs, builds, or executes code from the
 scanned project.
 
+**Research track:** vulnerability research and disclosure plus security tool
+development. Findings are version matches for review, not proof of exploitability
+or runtime reachability.
+
 ## Authorization and safe use
 
 Only scan source trees and lockfiles that you are authorised to inspect. The
