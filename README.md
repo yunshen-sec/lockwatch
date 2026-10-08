@@ -1,8 +1,8 @@
 # lockwatch
 
-[![Release](https://img.shields.io/github/v/release/Secx1/lockwatch?display_name=tag)](https://github.com/Secx1/lockwatch/releases)
-[![License](https://img.shields.io/github/license/Secx1/lockwatch)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/Secx1/lockwatch?style=flat)](https://github.com/Secx1/lockwatch)
+[![Release](https://img.shields.io/github/v/release/yunshen-sec/lockwatch?display_name=tag)](https://github.com/yunshen-sec/lockwatch/releases)
+[![License](https://img.shields.io/github/license/yunshen-sec/lockwatch)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/yunshen-sec/lockwatch?style=flat)](https://github.com/yunshen-sec/lockwatch)
 
 lockwatch is a small, read-only dependency vulnerability scanner. It reads
 `package-lock.json` (npm lockfile v1-v3), `requirements.txt`, and
